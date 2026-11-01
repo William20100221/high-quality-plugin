@@ -1,0 +1,34 @@
+# Model registry. Hand-written; edit freely. Ranked by quality per task type (0-10).
+# Task types: coding, maths, writing, research, planning, quick_fact
+
+analyser: local-small          # model used by the task analyser (keep it tiny and fast)
+reserve: 0.2                   # don't spend the last 20% of a quota on low-importance work
+
+models:
+  claude-opus:
+    backend: anthropic         # uses ANTHROPIC_API_KEY / `ant auth login`
+    model: claude-opus-5-5
+    context: 1000000
+    quota_tokens: 5000000      # per calendar month; omit for unlimited
+    refusal_fallback: true
+    prompt_style: xml          # xml | markdown
+    quality: {coding: 10, maths: 10, writing: 10, research: 9, planning: 10, quick_fact: 8}
+    # strengths: long-form reasoning, refactoring, follows complex instructions
+
+  local-coder:
+    backend: openai            # any OpenAI-compatible server (LM Studio)
+    url: http://192.168.1.50:1234/v1
+    model: qwen2.5-coder-14b-instruct
+    context: 32768
+    prompt_style: markdown
+    quality: {coding: 7, maths: 4, quick_fact: 5}
+    # strengths: fast single-file code
+
+  local-small:
+    backend: openai
+    url: http://192.168.1.50:1234/v1
+    model: qwen2.5-7b-instruct
+    context: 32768
+    prompt_style: markdown
+    quality: {quick_fact: 4, writing: 3}
+    # strengths: classification only
