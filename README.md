@@ -1,5 +1,39 @@
 # high-quality-plugin
 
+> [!WARNING]
+> **Development has stopped. This project will not get any more updates.**
+> The code still works as described below, but it is no longer maintained, issues won't be answered,
+> and the planned "command mode" for DeepSeek Harness will not be built.
+> [Why development stopped](#why-development-stopped)
+
+## Why development stopped
+
+The idea was to send each message to whichever model suits it best. Research into what switching models
+actually costs showed that the gain is small and the cost is real, so the plugin isn't worth continuing.
+
+**Switching models throws away the prompt cache.** Every message makes the model re-read the whole
+conversation. Servers cache the part they've already processed, so later turns only pay full price for the
+new part. That cache belongs to one model; a different model can't use it. So every switch means:
+
+- **Slower replies.** The first reply after a switch takes longer to start, because the new model processes
+  the entire history from scratch. The longer the chat, the longer the delay.
+- **More tokens.** Cached tokens cost about 10% of the normal price. After a switch, the whole history is
+  billed at full price, plus a little extra to build the new cache: roughly one full re-read of the
+  conversation per switch. Switching often in a long chat uses up limits much faster. Switching back
+  doesn't help for long either, because caches expire after about 5 minutes (up to an hour on some setups).
+- **Slightly worse answers, not better.** The new model sees earlier replies only as text, without the
+  reasoning behind them. It has to pick up another model's style and approach, so tone and formatting can
+  shift, and in long chats it may give less weight to early details.
+
+**The quality gain doesn't make up for it.** When the available models are roughly equally capable, picking
+a different one per message improves answers only a little. A router that switches on every message pays
+the cost above again and again for that small gain.
+
+**The better habit needs no plugin:** pick a model at the start and stay on it. If a long task really needs
+a different model, start a new chat with a short summary instead of switching in the middle.
+
+---
+
 Quality-first model routing: work out what a task needs, pick the model and effort that give the best
 answer for it, add the guidance the model needs, then send it. It comes in three forms:
 
