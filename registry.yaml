@@ -17,7 +17,7 @@ models:
 
   local-coder:
     backend: openai            # any OpenAI-compatible server (LM Studio)
-    url: http://192.168.1.50:1234/v1
+    url: http://localhost:1234/v1
     model: qwen2.5-coder-14b-instruct
     context: 32768
     prompt_style: markdown
@@ -26,7 +26,7 @@ models:
 
   local-small:
     backend: openai
-    url: http://192.168.1.50:1234/v1
+    url: http://localhost:1234/v1
     model: qwen2.5-7b-instruct
     context: 32768
     prompt_style: markdown

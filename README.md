@@ -1,41 +1,111 @@
-# router
+# high-quality-plugin
 
-Quality-first OpenAI-compatible proxy: analyse task → pick model → pick effort → add guidance → forward.
+Quality-first model routing: work out what a task needs, pick the model and effort that give the best
+answer for it, add the guidance the model needs, then send it. It comes in three forms:
 
-```
-pip install fastapi uvicorn httpx pyyaml anthropic
-uvicorn router:app --port 8080
-python test_router.py      # self-check against a fake upstream
-```
+| Part | What it is | Where it runs |
+|---|---|---|
+| [Claude Code skill](#claude-code-skill) | `skill/quality-router` | Claude Code |
+| [DeepSeek Harness skill](#deepseek-harness-skill) | `skill/quality-router-dsh` | DeepSeek Harness (`dsh`) |
+| [Router proxy](#router-proxy) | `router.py` | Any OpenAI-compatible client (e.g. Cherry Studio) |
 
-Point Cherry Studio at `http://localhost:8080/v1`, model `router` (auto) or a registry name (forced).
+The skills don't need the proxy, and don't need Python. Install only the parts you want.
 
-- `registry.yaml` — models, quality per task type, quotas, prompt style, which model is the analyser.
-- `skills/*.md` — frontmatter `tasks` / `keywords` decide when a skill is injected.
-- `GET /log` — original prompt next to the guidance that was added, plus model, effort, tokens, errors.
-- Response headers `x-router-model`, `x-router-task`, `x-router-effort` show each decision.
+## Claude Code skill
 
-## Skill version
+Downloads the skill into your personal Claude Code skills folder (`~/.claude/skills`), creating it if needed.
 
-`skill/quality-router/SKILL.md` runs the same pipeline inside Claude Code: it classifies the task, picks
-the model (haiku / sonnet / opus / fable) and effort by quality, writes a brief that keeps your request
-verbatim plus success criteria, and dispatches it to a subagent. Install:
+**macOS / Linux / Git Bash**
 
-```
-cp -r skill/quality-router ~/.claude/skills/
+```bash
+mkdir -p ~/.claude/skills/quality-router && curl -fsSL https://raw.githubusercontent.com/William20100221/high-quality-plugin/main/skill/quality-router/SKILL.md -o ~/.claude/skills/quality-router/SKILL.md
 ```
 
-Then say "route this: …" or `/quality-router …` in Claude Code.
+**Windows PowerShell**
 
-### DeepSeek Harness version
-
-`skill/quality-router-dsh/SKILL.md` does the same in [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness):
-it checks `list_subagent_models`, routes between `deepseek-flash` and `deepseek-v4-pro` (or a stronger listed
-route), sets `reasoning_effort` (`off` / `low` / `high` / `max`) and delegates with the `subagent` tool.
-Needs model selection on (default in the Web and Desktop apps). Install:
-
-```
-cp -r skill/quality-router-dsh ~/.dsh/skills/
+```powershell
+New-Item -ItemType Directory -Force "$HOME\.claude\skills\quality-router" | Out-Null; Invoke-WebRequest https://raw.githubusercontent.com/William20100221/high-quality-plugin/main/skill/quality-router/SKILL.md -OutFile "$HOME\.claude\skills\quality-router\SKILL.md"
 ```
 
-Run the install commands from the repo folder. In PowerShell: `Copy-Item -Recurse skill\quality-router-dsh $HOME\.dsh\skills\`
+Start a new Claude Code session, then say `route this: <your task>` or type `/quality-router <your task>`.
+To install it for one project only, put the folder in `<project>/.claude/skills/` instead.
+
+## DeepSeek Harness skill
+
+Downloads the skill into your personal [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)
+skills folder (`~/.dsh/skills`). If you've set `DSH_HOME`, use `$DSH_HOME/skills` instead.
+
+**macOS / Linux / Git Bash**
+
+```bash
+mkdir -p ~/.dsh/skills/quality-router-dsh && curl -fsSL https://raw.githubusercontent.com/William20100221/high-quality-plugin/main/skill/quality-router-dsh/SKILL.md -o ~/.dsh/skills/quality-router-dsh/SKILL.md
+```
+
+**Windows PowerShell**
+
+```powershell
+New-Item -ItemType Directory -Force "$HOME\.dsh\skills\quality-router-dsh" | Out-Null; Invoke-WebRequest https://raw.githubusercontent.com/William20100221/high-quality-plugin/main/skill/quality-router-dsh/SKILL.md -OutFile "$HOME\.dsh\skills\quality-router-dsh\SKILL.md"
+```
+
+Start a new dsh session; the skill appears in the skill list. To install it for one project only, put the
+folder in `<project>/.dsh/skills/` instead.
+
+The skill picks a model per task (`deepseek-flash` or `deepseek-v4-pro`, or a stronger route if your
+session lists one) and sets `reasoning_effort`. That needs model selection turned on for subagents: it is on
+by default in the Web and Desktop apps, but not in headless, SDK or ACP profiles. Without it the skill still
+works, on your current model only, and tells you so.
+
+## Router proxy
+
+A local proxy between your chat client and your models (LM Studio, Claude). Every request is analysed,
+routed to the best model the budget allows, given an effort level, and has skill guidance added before it
+is sent. Needs **Python 3.12 or newer**.
+
+**1. Get the code and install dependencies**
+
+```bash
+git clone https://github.com/William20100221/high-quality-plugin.git
+```
+
+```bash
+cd high-quality-plugin
+```
+
+```bash
+python -m pip install fastapi uvicorn httpx pyyaml anthropic
+```
+
+No git? Download the ZIP from the green **Code** button on GitHub and unzip it instead.
+On macOS / Linux, use `python3` if `python` isn't found.
+
+**2. Check it works** (uses a fake upstream, no models or API keys needed; prints `ok`)
+
+```bash
+python test_router.py
+```
+
+**3. Configure your models** in `registry.yaml`:
+
+- Set each local model's `url` to your LM Studio server (default `http://localhost:1234/v1`) and `model`
+  to the model id LM Studio shows.
+- For Claude, set the `ANTHROPIC_API_KEY` environment variable (or run `ant auth login`).
+- Remove models you don't have; `analyser` must name one that's left (a small, fast local model is best).
+
+**4. Run it**
+
+```bash
+python -m uvicorn router:app --port 8080
+```
+
+Point your client at `http://localhost:8080/v1`. Use model `router` to route automatically, or a registry
+name (e.g. `claude-opus`) to force one model.
+
+| What | Where |
+|---|---|
+| Models, quality per task type, quotas, prompt style | `registry.yaml` |
+| Skills injected into prompts (matched by `tasks` / `keywords` in the header) | `skills/*.md` |
+| Original prompt next to the guidance added, plus model, effort, tokens, errors | `http://localhost:8080/log` |
+| The decision for each response | headers `x-router-model`, `x-router-task`, `x-router-effort` |
+
+Limits: Claude Code can't use the proxy (it speaks Anthropic's `/v1/messages`, not the OpenAI format).
+Images and tool calls aren't passed to Claude yet, and local models stream text only.
