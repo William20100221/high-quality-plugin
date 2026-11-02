@@ -26,3 +26,14 @@ cp -r skill/quality-router ~/.claude/skills/
 ```
 
 Then say "route this: …" or `/quality-router …` in Claude Code.
+
+### DeepSeek Harness version
+
+`skill/quality-router-dsh/SKILL.md` does the same in [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness):
+it checks `list_subagent_models`, routes between `deepseek-flash` and `deepseek-v4-pro` (or a stronger listed
+route), sets `reasoning_effort` (`off` / `low` / `high` / `max`) and delegates with the `subagent` tool.
+Needs model selection on (default in the Web and Desktop apps). Install:
+
+```
+cp -r skill/quality-router-dsh ~/.dsh/skills/
+```
