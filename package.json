@@ -1,0 +1,13 @@
+{
+  "name": "dsh-quality-router",
+  "version": "0.1.0",
+  "description": "Quality-first routing skill for DeepSeek Harness: rates each task, picks the model and reasoning effort that give the best answer, and delegates it with a brief that keeps your request word for word.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/William20100221/high-quality-plugin.git"
+  },
+  "homepage": "https://github.com/William20100221/high-quality-plugin#readme",
+  "keywords": ["dsh-bundle", "dsh-plugin", "deepseek-harness", "agent-skill", "model-routing"],
+  "files": ["cordis.patch.yml", "dsh/skills"],
+  "dsh": { "bundle": { "patch": "./cordis.patch.yml" } }
+}

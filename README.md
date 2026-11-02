@@ -6,7 +6,7 @@ answer for it, add the guidance the model needs, then send it. It comes in three
 | Part | What it is | Where it runs |
 |---|---|---|
 | [Claude Code skill](#claude-code-skill) | `skill/quality-router` | Claude Code |
-| [DeepSeek Harness skill](#deepseek-harness-skill) | `skill/quality-router-dsh` | DeepSeek Harness (`dsh`) |
+| [DeepSeek Harness skill](#deepseek-harness-skill) | `dsh/skills/quality-router-dsh` (plugin `dsh-quality-router`) | DeepSeek Harness (`dsh`) |
 | [Router proxy](#router-proxy) | `router.py` | Any OpenAI-compatible client (e.g. Cherry Studio) |
 
 The skills don't need the proxy, and don't need Python. Install only the parts you want.
@@ -32,23 +32,34 @@ To install it for one project only, put the folder in `<project>/.claude/skills/
 
 ## DeepSeek Harness skill
 
-Downloads the skill into your personal [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)
-skills folder (`~/.dsh/skills`). If you've set `DSH_HOME`, use `$DSH_HOME/skills` instead.
+This repo is also a [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) plugin
+(`dsh-quality-router`). Installed as a plugin, it appears on the **Plugins** page and its skill is added to
+every session. It contains no code: only the skill and a config file that tells DSH where the skill is.
 
-**macOS / Linux / Git Bash**
+**Install as a plugin (recommended).** Add the GitHub repo `William20100221/high-quality-plugin` the same
+way you add any GitHub plugin, or from a terminal (replace `desktop` with your profile: `desktop` for the
+Desktop app, `web` for `dsh web`):
 
 ```bash
-mkdir -p ~/.dsh/skills/quality-router-dsh && curl -fsSL https://raw.githubusercontent.com/William20100221/high-quality-plugin/main/skill/quality-router-dsh/SKILL.md -o ~/.dsh/skills/quality-router-dsh/SKILL.md
+npx @deepseek-ai/dsh plugin --profile desktop add github:William20100221/high-quality-plugin
 ```
 
-**Windows PowerShell**
+Restart DSH. `dsh-quality-router` appears on the Plugins page and `quality-router-dsh` in the skill list.
+
+**Or copy just the skill** into your personal skills folder (`~/.dsh/skills`, or `$DSH_HOME/skills` if you've
+set `DSH_HOME`). It works the same but doesn't appear on the Plugins page. Don't do both.
+
+macOS / Linux / Git Bash:
+
+```bash
+mkdir -p ~/.dsh/skills/quality-router-dsh && curl -fsSL https://raw.githubusercontent.com/William20100221/high-quality-plugin/main/dsh/skills/quality-router-dsh/SKILL.md -o ~/.dsh/skills/quality-router-dsh/SKILL.md
+```
+
+Windows PowerShell:
 
 ```powershell
-New-Item -ItemType Directory -Force "$HOME\.dsh\skills\quality-router-dsh" | Out-Null; Invoke-WebRequest https://raw.githubusercontent.com/William20100221/high-quality-plugin/main/skill/quality-router-dsh/SKILL.md -OutFile "$HOME\.dsh\skills\quality-router-dsh\SKILL.md"
+New-Item -ItemType Directory -Force "$HOME\.dsh\skills\quality-router-dsh" | Out-Null; Invoke-WebRequest https://raw.githubusercontent.com/William20100221/high-quality-plugin/main/dsh/skills/quality-router-dsh/SKILL.md -OutFile "$HOME\.dsh\skills\quality-router-dsh\SKILL.md"
 ```
-
-Start a new dsh session; the skill appears in the skill list. To install it for one project only, put the
-folder in `<project>/.dsh/skills/` instead.
 
 The skill picks a model per task (`deepseek-flash` or `deepseek-v4-pro`, or a stronger route if your
 session lists one) and sets `reasoning_effort`. That needs model selection turned on for subagents: it is on

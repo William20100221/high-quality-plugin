@@ -1,0 +1,12 @@
+# DeepSeek Harness bundle: no executable code. It mounts a separate instance of the built-in
+# skill loader whose only root is this package's dsh/skills folder. The path is resolved from
+# where the package is installed, so it works from GitHub, npm or a local checkout.
+- insert:
+    - id: quality-router-skills
+      name: '@deepseek-ai/dsh-skill-filesystem'
+      config:
+        providerName: dsh-quality-router
+        includeDefaultRoots: false
+        watch: false
+        customSkillDirs:
+          - !!js "process.getBuiltinModule('node:path').join(process.getBuiltinModule('node:module').createRequire(baseUrl).resolve('dsh-quality-router/package.json'), '..', 'dsh', 'skills')"
