@@ -37,3 +37,5 @@ Needs model selection on (default in the Web and Desktop apps). Install:
 ```
 cp -r skill/quality-router-dsh ~/.dsh/skills/
 ```
+
+Run the install commands from the repo folder. In PowerShell: `Copy-Item -Recurse skill\quality-router-dsh $HOME\.dsh\skills\`
